@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 function identity(x) {
   return x;
 }
@@ -10,22 +12,21 @@ function det3(a, b, c, d, e, f, g, h, i) {
   return a * det2(e, f, h, i) - b * det2(d, f, g, i) + c * det2(d, e, g, h);
 }
 
-function regression2(pairs, transform=identity) {
-  const n = pairs.length;
+function regression2(x, y) {
+  const n = x.length;
+  assert.equal(y.length, n);
+
+  // Collapse inputs into a matrix representation.
   let Σx  = 0;
   let Σy  = 0;
   let Σxx = 0;
   let Σxy = 0;
 
   for(let i = 0; i < n; i++) {
-    const pair = pairs[i];
-    const x = transform(pair[0]);
-    const y = transform(pair[1]);
-
-    Σx  += x;
-    Σy  += y;
-    Σxx += x * x;
-    Σxy += x * y;
+    Σx  += x[i];
+    Σy  += y[i];
+    Σxx += x[i] * x[i];
+    Σxy += x[i] * y[i];
   }
 
   // Solve the following system of equations using Cramer's rule:
@@ -38,8 +39,12 @@ function regression2(pairs, transform=identity) {
   return [a, b];
 }
 
-function regression3(triplets, transform=identity) {
-  const n = triplets.length;
+function regression3(x, y, z) {
+  const n = x.length;
+  assert.strictEqual(y.length, n);
+  assert.strictEqual(z.length, n);
+
+  // Collapse inputs into a matrix representation.
   let Σx  = 0;
   let Σy  = 0;
   let Σz  = 0;
@@ -50,19 +55,14 @@ function regression3(triplets, transform=identity) {
   let Σyz = 0;
 
   for(let i = 0; i < n; i++) {
-    const triplet = triplets[i];
-    const x = transform(triplet[0]);
-    const y = transform(triplet[1]);
-    const z = transform(triplet[2]);
-
-    Σx  += x;
-    Σy  += y;
-    Σz  += z;
-    Σxx += x * x;
-    Σxy += x * y;
-    Σxz += x * z;
-    Σyy += y * y;
-    Σyz += y * z;
+    Σx  += x[i];
+    Σy  += y[i];
+    Σz  += z[i];
+    Σxx += x[i] * x[i];
+    Σxy += x[i] * y[i];
+    Σxz += x[i] * z[i];
+    Σyy += y[i] * y[i];
+    Σyz += y[i] * z[i];
   }
 
   // Solve the following system of equations using Cramer's rule:
@@ -77,4 +77,57 @@ function regression3(triplets, transform=identity) {
   return [a, b, c];
 }
 
-export {regression2, regression3};
+function sinusoidal(x, y, frequency, phase=NaN) {
+  const n = x.length;
+  assert.strictEqual(y.length, n);
+
+  // Phase is known.
+  if(Number.isFinite(phase)) {
+    // Transform input into the correct form.
+    const sin_x = new Array(n);
+
+    for(let i = 0; i < n; i++) {
+      sin_x[i] = Math.sin(x[i] * frequency + phase);
+    }
+
+    // Find the best fit, and convert it into our desired form.
+    const fit = regression2(sin_x, y);
+    const mean = fit[0];
+    let amplitude = fit[1];
+
+    // Amplitude should be positive.
+    if(amplitude < 0) {
+      amplitude = -amplitude;
+      phase += Math.PI;
+    }
+
+    // Phase should be in the range [-π, π).
+    phase -= Math.floor((phase + Math.PI) / (Math.PI * 2)) * (Math.PI * 2);
+
+    // Return the answer directly.
+    return [mean, amplitude, phase, frequency];
+  }
+
+  // Phase is unknown.
+  else {
+    // Transform input into independent terms, because we can use these to find
+    // the best-fit phase.
+    const sin_x = new Array(n);
+    const cos_x = new Array(n);
+
+    for(let i = 0; i < n; i++) {
+      sin_x[i] = Math.sin(x[i] * frequency);
+      cos_x[i] = Math.cos(x[i] * frequency);
+    }
+
+    // Find the best fit, and convert it into our desired form.
+    const fit = regression3(sin_x, cos_x, y);
+    const mean = fit[0];
+    const amplitude = Math.hypot(fit[1], fit[2]);
+    phase = Math.atan2(fit[2], fit[1]);
+
+    return [mean, amplitude, phase, frequency];
+  }
+}
+
+export {regression2, regression3, sinusoidal};
