@@ -12,8 +12,8 @@ function det3(a, b, c, d, e, f, g, h, i) {
 
 function regression2(pairs, transform=identity) {
   const n = pairs.length;
-  let Σx = 0;
-  let Σy = 0;
+  let Σx  = 0;
+  let Σy  = 0;
   let Σxx = 0;
   let Σxy = 0;
 
@@ -40,9 +40,9 @@ function regression2(pairs, transform=identity) {
 
 function regression3(triplets, transform=identity) {
   const n = triplets.length;
-  let Σx = 0;
-  let Σy = 0;
-  let Σz = 0;
+  let Σx  = 0;
+  let Σy  = 0;
+  let Σz  = 0;
   let Σxx = 0;
   let Σxy = 0;
   let Σxz = 0;
@@ -77,4 +77,4 @@ function regression3(triplets, transform=identity) {
   return [a, b, c];
 }
 
-export { regression2, regression3 };
+export {regression2, regression3};
