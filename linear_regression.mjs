@@ -41,8 +41,8 @@ function regression2(x, y) {
 
 function regression3(x, y, z) {
   const n = x.length;
-  assert.strictEqual(y.length, n);
-  assert.strictEqual(z.length, n);
+  assert.equal(y.length, n);
+  assert.equal(z.length, n);
 
   // Collapse inputs into a matrix representation.
   let Σx  = 0;
@@ -79,7 +79,7 @@ function regression3(x, y, z) {
 
 function sinusoidal(x, y, frequency, phase=NaN) {
   const n = x.length;
-  assert.strictEqual(y.length, n);
+  assert.equal(y.length, n);
 
   // Phase is known.
   if(Number.isFinite(phase)) {
