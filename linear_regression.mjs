@@ -1,9 +1,5 @@
 import assert from "node:assert/strict";
 
-function identity(x) {
-  return x;
-}
-
 // Give the determinant of the matrix:
 //   a c
 //   b d
